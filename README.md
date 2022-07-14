@@ -14,7 +14,7 @@ Corinne, le CTO de l’agence ;
 Frank, le développeur front-end qui s’est chargé d’intégrer la maquette statique du site ;
 Bilal, le développeur back-end qui implémente l’API à laquelle est connecté le front-end.
 
-###Corinne vous envoie un e-mail pour vous briefer sur la mission :
+### Corinne vous envoie un e-mail pour vous briefer sur la mission :
 
 De : Corinne
 À : Vous
