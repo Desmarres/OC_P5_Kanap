@@ -60,7 +60,7 @@ Frank
 
 ## Pour voir le site
 
-[Lien vers le déploiement du projet Le Kanap](https://desmarres.github.io/OC_P5_Kanap/)
+[Lien vers le déploiement du projet Le Kanap](https://desmarres.github.io/OC_P5_Kanap/front/html/index.html)
 
 ## Technologie
 
