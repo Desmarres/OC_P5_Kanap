@@ -36,7 +36,7 @@ Bonne journée,
 
 Corinne
 
-###Un peu plus tard, Frank vous envoie un e-mail pour vous apporter quelques précisions complémentaires sur son travail :
+### Un peu plus tard, Frank vous envoie un e-mail pour vous apporter quelques précisions complémentaires sur son travail :
 
 De : Frank
 À : Vous
