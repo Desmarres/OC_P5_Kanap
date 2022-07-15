@@ -1,4 +1,4 @@
-# Construisez un site e-commerce en JavaScript
+# Construisez un site e-commerce en JavaScript - Partie Frontend
 
 Projet 5 de la formation OpenClassroom en Développement Web
 
@@ -60,7 +60,7 @@ Frank
 
 ## Pour voir le site
 
-[Lien vers le déploiement du projet Le Kanap](https://desmarres.github.io/OC_P5_Kanap/front/html/index.html)
+[Lien vers le déploiement du projet Le Kanap](https://desmarres.github.io/OC_P5_Kanap/)
 
 ## Technologie
 
