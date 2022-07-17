@@ -35,7 +35,7 @@ function displayListProduct(listProduct){
 
         /*création de l'élément Img du produit*/     
         var elementImg = document.createElement("img");
-        elementImg.setAttribute("src",listProduct[i].imageUrl);
+        elementImg.setAttribute("src",listProduct[i].imageUrl.replace("p","ps"));
         elementImg.setAttribute("alt",listProduct[i].altTxt);
 
         /*création de l'élément Article du produit*/     
