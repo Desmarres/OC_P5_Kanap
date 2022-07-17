@@ -69,7 +69,7 @@ async function displayBag(){
 
         /*création de l'élément Img du produit*/     
         var elementImg = document.createElement("img");
-        elementImg.setAttribute("src",product.imageUrl);
+        elementImg.setAttribute("src",product.imageUrl.replace("p","ps"));
         elementImg.setAttribute("alt",product.altTxt);
         
         /*création de l'élément Article du produit*/     

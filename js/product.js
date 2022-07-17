@@ -51,7 +51,7 @@ function displayproduct(product) {
     
     /*création de l'élément Img du produit*/     
     var elementImg = document.createElement("img");
-    elementImg.setAttribute("src",product.imageUrl);
+    elementImg.setAttribute("src",product.imageUrl.replace("p","ps"));
     elementImg.setAttribute("alt",product.altTxt);
 
     /*modification de l'élément H1 "title" du produit*/
