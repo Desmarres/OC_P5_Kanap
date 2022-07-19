@@ -35,9 +35,13 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     /* si le panier existe*/
     if (localStorage.getItem("article")){
-        displayBag();
-        displayTotal(bag);       
+        displayBag();  
     }
+    else{
+        emptyBag();
+    }
+
+    displayTotal(bag);
 
     /*contrôle des données saisies*/
     validateData(inputFirstName,regexName);
@@ -219,9 +223,9 @@ function removeQuantityProduct(elementInput){
     
                 }
                 else{
-                    console.log(bag[i].quantity);
-                    elementInput.setAttribute("value",bag[i].quantity);
                     alert("Veuillez saisir un nombre entre 1 et 100");
+                    sectionCartItems.removeChild(article);
+                    displayBag();
                 }
 
                 i = bag.length;
@@ -241,17 +245,25 @@ function deleteProduct(deleteItem){
 
             /* recherche du produit*/
             if ((bag[i].id == article.dataset.id) && (bag[i].color == article.dataset.color)){
-                var productDelete = bag.splice(i,1);
                 
-                /* mise a jour du panier dans le local Storage*/
-                localStorage.setItem("article", JSON.stringify(bag));
+                var productDelete = bag.splice(i,1);
 
                 sectionCartItems.removeChild(article);
                 
+                if (bag.length == 0){
+                    localStorage.clear();
+                    emptyBag();
+                }
+                else{
+                    /* mise a jour du panier dans le local Storage*/
+                    localStorage.setItem("article", JSON.stringify(bag));
+                }
+
                 /*Modification affichage des totaux*/
                 displayTotal(bag);
 
                 i = bag.length;
+
             }
         }
     })
@@ -308,7 +320,7 @@ async function buyBag(){
 
 /* function redirection vers confirmation*/
 function redirectionConfirmationOrder(order){
-    /* localStorage.clear(); */
+    localStorage.clear();
     document.location.href = "confirmation.html?id=" + order.orderId;
 }
 
@@ -334,4 +346,13 @@ function orderValidate(){
             console.log("formulaire invalide");
         }
     })
+}
+
+function emptyBag(){
+    /* message panier vide*/
+    sectionCartItems.innerHTML = "Votre panier est vide";
+    sectionCartItems.style.textAlign = "center";
+    sectionCartItems.style.marginBottom = "90px";
+    sectionCartItems.style.fontSize = "25px";
+    bag = [];
 }
