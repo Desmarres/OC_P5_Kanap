@@ -1,13 +1,3 @@
-document.addEventListener('DOMContentLoaded', function(event) {
-
-    /* si le panier existe*/
-    if (localStorage.getItem("article")){
-        displayBag();
-        displayTotal(bag);       
-    }
-
-});
-
 /* récupération de la section du DOM dynamique*/
 var sectionCartItems = document.getElementById("cart__items");
 
@@ -27,10 +17,70 @@ var inputCity = document.getElementById("city");
 var inputEmail = document.getElementById("email");
 var inputOrder = document.getElementById("order");
 
-var regexName = new RegExp("[/^e[0-9]{3,}$/]");
-var element = "fefqs215";
+/* ajout des placeholders */
+inputFirstName.setAttribute("placeholder","Pierre");
+inputLastName.setAttribute("placeholder","Dupont");
+inputAddress.setAttribute("placeholder",'10 quai de la charente');
+inputCity.setAttribute("placeholder","75019 Paris 19");
+inputEmail.setAttribute("placeholder","support@name.com");
 
-console.log(validateData(element,regex));
+/* création des regex*/
+var regexName = new RegExp("^[A-Za-zÀ-ÖØ-öø-ÿ \-]+$");
+var regexAdress = new RegExp("^[A-Za-zÀ-ÖØ-öø-ÿ0-9 \-]+$");
+var regexCity = new RegExp("^[0-9]{5} [A-Za-zÀ-ÖØ-öø-ÿ0-9 \-]+$");
+var regexEmail = new RegExp("^[A-Za-z_0-9!#$%&'*+/=?^_`{|}~. \-]+@(([A-z0-9 \-]+\.[A-z]{2,3})|(([0-9]{1,3}[.]){3}[0-9]{1,3}))$");
+
+/*une fois le DOM chargé*/
+document.addEventListener('DOMContentLoaded', function(event) {
+
+    /* si le panier existe*/
+    if (localStorage.getItem("article")){
+        displayBag();
+        displayTotal(bag);       
+    }
+
+    /*contrôle des données saisies*/
+    validateData(inputFirstName,regexName);
+    validateData(inputLastName,regexName);
+    validateData(inputAddress,regexAdress);
+    validateData(inputCity,regexCity);
+    validateData(inputEmail,regexEmail);
+
+    /* validation commande */
+    orderValidate();
+
+});
+
+function getProductById(id) {
+    return fetch("https://desmarres-p5-kanap.herokuapp.com/api/products/" + id)
+    .then(function(res){
+        if (res.ok) {
+            return res.json();
+        }
+    })
+    .catch(function(err){
+        console.log("Une erreur est survenue lors de la récupération des produits : " + err);
+    });
+}
+
+function postOrder(order){
+    return fetch("https://desmarres-p5-kanap.herokuapp.com/api/products/order",{
+        method: "POST",
+        headers: {
+            'Accept': 'application/json', 
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(order)
+    })
+    .then(function(res){
+        if (res.ok) {
+            return res.json();
+        }
+    })
+    .catch(function(err){
+        console.log("Une erreur est survenue lors de l'envoi de la commande : " + err);
+    });
+}
 
 /* fonction affichage panier*/
 async function displayBag(){
@@ -119,21 +169,26 @@ async function displayBag(){
         elementArticle.appendChild(elementDivCartItemContent);
 
         sectionCartItems.appendChild(elementArticle);
-        deleteProduct(elementPDeleteItem);
         removeQuantityProduct(elementInput);
+        deleteProduct(elementPDeleteItem);
     }
 }
 
-function getProductById(id) {
-    return fetch("https://desmarres-p5-kanap.herokuapp.com/api/products/" + id)
-    .then(function(res){
-        if (res.ok) {
-            return res.json();
-        }
-    })
-    .catch(function(err){
-        console.log("Une erreur est survenue lors de la récupération des produits : " + err);
-    });
+/* fonction calcul nb articles et totals price*/
+async function displayTotal(bag){
+
+    var total = 0;
+
+    for (i = 0 ; i < bag.length ; i++){
+
+        /* récupération du produits de l'API*/
+        var product = await getProductById(bag[i].id);
+        total += parseInt(bag[i].quantity) * parseInt(product.price);
+    }
+
+    /*Modification affichage des totaux*/
+    spanTotalQuantity.innerHTML = bag.length;
+    spanTotalPrice.innerHTML = total;
 }
 
 /* fonction modification de la quantité du produit dans le panier*/
@@ -160,7 +215,7 @@ function removeQuantityProduct(elementInput){
                     localStorage.setItem("article", JSON.stringify(bag));
                     
                     /*Modification affichage des totaux*/
-                     affichageTotal(bag);
+                    displayTotal(bag);
     
                 }
                 else{
@@ -194,7 +249,7 @@ function deleteProduct(deleteItem){
                 sectionCartItems.removeChild(article);
                 
                 /*Modification affichage des totaux*/
-                affichageTotal(bag);
+                displayTotal(bag);
 
                 i = bag.length;
             }
@@ -202,23 +257,81 @@ function deleteProduct(deleteItem){
     })
 }
 
-async function displayTotal(bag){
+function validateData(element,regex){
+    element.addEventListener('change',function(saisie){
 
-    var total = 0;
+        var value = saisie.target.value;
 
-    for (i = 0 ; i < bag.length ; i++){
+        var elementErrorMsg = element.nextElementSibling;
+        var elementLabel = element.previousElementSibling;
 
-        /* récupération du produits de l'API*/
-        var product = await getProductById(bag[i].id);
-        total += parseInt(bag[i].quantity) * parseInt(product.price);
+        if (regex.test(value)){
+            elementErrorMsg.innerHTML = "";
+        }else{
+            if (element.id == inputCity.id){
+                elementErrorMsg.innerHTML = "Saisie incorrecte, veuillez renseigner le code postal puis la ville (Ex : 75019 Paris 19).";
+            }
+            else{
+                if (element.id == inputEmail.id){
+                    elementErrorMsg.innerHTML = "Saisie incorrecte, veuillez renseigner un email valide (Ex : support@name.com).";
+                }
+                else{
+                    elementErrorMsg.innerHTML = "Saisie incorrecte, veuillez renseigner un " + elementLabel.innerHTML.replace(":","") + " correct.";
+                }
+            }
+        };
+    })
+}
+
+/* function commander */
+async function buyBag(){
+    var listeIdProduct = [];
+
+    /*on parcourt l'ensemble du panier*/
+    for (var i = 0; i < bag.length; i++){
+        listeIdProduct [i] = bag[i].id;
     }
 
-    /*Modification affichage des totaux*/
-    spanTotalQuantity.innerHTML = bag.length;
-    spanTotalPrice.innerHTML = total;
+    var order = {
+        contact : {
+            firstName: inputFirstName.value,
+            lastName: inputLastName.value,
+            address: inputAddress.value,
+            city: inputCity.value,
+            email: inputEmail.value
+        },
+        products : listeIdProduct
+    }
+
+    redirectionConfirmationOrder(await postOrder(order));
 }
 
-function validateData(element,regex){
-    return regex.test(element);
+/* function redirection vers confirmation*/
+function redirectionConfirmationOrder(order){
+    /* localStorage.clear(); */
+    document.location.href = "confirmation.html?id=" + order.orderId;
 }
 
+/* function validation commande */
+function orderValidate(){
+    inputOrder.addEventListener("click",function(event){
+
+        event.preventDefault();
+
+        var elementOrderQuestion = document.getElementsByClassName("cart__order__form__question");
+        var errorMsg ="";
+
+        for (var i = 0; i < elementOrderQuestion.length; i++){
+            errorMsg += elementOrderQuestion[i].children[2].innerHTML;
+            console.log(errorMsg);
+        }
+
+        /*si le formulaire est valide*/
+        if (errorMsg == ""){
+            buyBag();
+        }
+        else{
+            console.log("formulaire invalide");
+        }
+    })
+}
