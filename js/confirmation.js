@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', function(event) {
 
     /* récupération de l'ID de la commande*/
-    var id = getOrderId();
+    let id = getOrderId();
 
     /* récupération du span du DOM*/
-    var spanOrderId = document.getElementById("orderId");
+    let spanOrderId = document.getElementById("orderId");
     spanOrderId.innerHTML = id;
     
 });
@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function(event) {
 function getOrderId(){
 
     /*recupère les paramètre de l'URL*/
-    var url = new URL(window.location.href);
-    var search_params = new URLSearchParams(url.search);
+    let url = new URL(window.location.href);
+    let search_params = new URLSearchParams(url.search);
 
     /* vérifie la présence de l'attribut ID */
     if(search_params.has('id')) {

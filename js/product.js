@@ -1,39 +1,27 @@
-document.addEventListener('DOMContentLoaded', function(event) {
-
-    /* récupération du produits de l'API*/
-    fetch("https://desmarres-p5-kanap.herokuapp.com/api/products/" + id)
-    .then(function(res){
-        if (res.ok) {
-            return res.json();
-        }
-    })
-    .then(function(product){
-        displayproduct(product);
-    })
-    .catch(function(err){
-        console.log("Une erreur est survenue lors de la récupération des produits : " + err);
-    });
-    addProductToBag();
-});
-
-/* récupération de l'ID du produit */
-var id = getProductId();
-
 /* récupération de élément "addToCart" du DOM */
-var buttonAddToCart = document.getElementById("addToCart");
+const buttonAddToCart = document.getElementById("addToCart");
 
 /* récupération de élément "quantity" du DOM */
-var labelItemQuantity = document.getElementById("quantity");
+const labelItemQuantity = document.getElementById("quantity");
 
 /* récupération de élément "color-select" du DOM */
-var selectColors = document.getElementById("colors");
+const selectColors = document.getElementById("colors");
+
+/* récupération de l'ID du produit */
+const productId = getProductId();
+
+/* récupération de élément "h1" du DOM */
+const productName = document.getElementById("title");
+
+/* création de la variable panier */
+var bag =[];
 
 /* fonction recupération de l'id du produit dans l'URL => retourne id*/
 function getProductId(){
 
     /*recupère les paramètre de l'URL*/
-    var url = new URL(window.location.href);
-    var search_params = new URLSearchParams(url.search);
+    let url = new URL(window.location.href);
+    let search_params = new URLSearchParams(url.search);
 
     /* vérifie la présence de l'attribut ID */
     if(search_params.has('id')) {
@@ -43,32 +31,54 @@ function getProductId(){
     }
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+
+    /* récupération du produits de l'API*/
+    fetch("https://desmarres-p5-kanap.herokuapp.com/api/products/" + productId)
+    .then(function(res){
+        if (res.ok) {
+            return res.json();
+        }
+    })
+    .then(function(product){
+        displayproduct(product);
+        removeQuantityProduct();
+        removeColorProduct();
+        displayAddToCart();
+        addProductToBag();
+    })
+    .catch(function(err){
+        console.log("Une erreur est survenue lors de la récupération des produits : " + err);
+        alert("Erreur de communication avec le serveur. Nous ne pouvons pas afficher le produit.");
+    });
+});
+
 /* fonction affichage produit*/
 function displayproduct(product) {
         
     /* récupération de élément "item__img" du DOM */
-    var divItemsImg = document.getElementsByClassName("item__img")[0];
+    const divItemsImg = document.getElementsByClassName("item__img")[0];
     
     /*création de l'élément Img du produit*/     
-    var elementImg = document.createElement("img");
+    const elementImg = document.createElement("img");
     elementImg.setAttribute("src",product.imageUrl.replace("p","ps"));
     elementImg.setAttribute("alt",product.altTxt);
 
     /*modification de l'élément H1 "title" du produit*/
-    var elementH1 = document.getElementById("title");
+    const elementH1 = document.getElementById("title");
     elementH1.innerHTML = product.name;
     
     /*modification de l'élément span "price" du produit*/
-    var elementSpan = document.getElementById("price");
+    const elementSpan = document.getElementById("price");
     elementSpan.innerHTML = product.price;
 
     /*modification de l'élément p "description" du produit*/
-    var elementSpan = document.getElementById("description");
-    elementSpan.innerHTML = product.description;
+    const elementP = document.getElementById("description");
+    elementP.innerHTML = product.description;
 
     /*création des éléments option "color-select" du produit*/
-    for (var i = 0; i < product.colors.length; i++){
-        var elementOption = document.createElement("option");
+    for (let i in product.colors){
+        let elementOption = document.createElement("option");
         elementOption.setAttribute("value",product.colors[i]);
         elementOption.innerHTML = product.colors[i];
         selectColors.appendChild(elementOption);
@@ -76,6 +86,47 @@ function displayproduct(product) {
 
     /*ajout des éléments aux DOM*/
     divItemsImg.appendChild(elementImg);
+}
+
+/* fonction modification de la quantité du produit */
+function removeQuantityProduct(){
+
+    /*ecoute de la modification de quantité du produit */
+    labelItemQuantity.addEventListener('change',function(event){
+
+        event.preventDefault();
+
+        /*vérification que la quantité est bien correcte*/
+        if (!( 0 < parseInt(labelItemQuantity.value) && 101 > parseInt(labelItemQuantity.value))){
+            alert("Veuillez saisir un nombre entre 1 et 100");
+            labelItemQuantity.value = event.target.defaultValue;
+        }
+        displayAddToCart()
+    })
+
+}
+
+function removeColorProduct(){
+    
+    /*ecoute de la modification de quantité du produit */
+    selectColors.addEventListener('change',function(event){
+        displayAddToCart();
+    })
+}
+
+function displayAddToCart(){
+
+    /* recupération des élément du formulaire */
+    let quantity = parseInt(labelItemQuantity.value);
+    let color = selectColors.value;
+
+    /*si le formulaire est valide*/
+    if (0 < quantity && 101 > quantity && color != ""){
+        buttonAddToCart.style.display = "inline";
+    }
+    else{
+        buttonAddToCart.style.display = "none";
+    }
 }
 
 function addProductToBag(){
@@ -86,77 +137,62 @@ function addProductToBag(){
         var quantity = parseInt(labelItemQuantity.value);
         var color = selectColors.value;
 
-        /* contrôle si tout les champs du formulaire sont remplis*/
-        if (quantity != 0 && color != ""){
-                
-            var bag =[];
+        /* si le panier existe*/
+        if (localStorage.getItem("article")){
 
-            /* si le panier existe*/
-            if (localStorage.getItem("article")){
+            /* récuperation du panier */
+            var bagJSON = localStorage.getItem("article");
+            bag = bagJSON && JSON.parse(bagJSON);
 
-                /* récuperation du panier */
-                var bagJSON = localStorage.getItem("article");
-                bag = bagJSON && JSON.parse(bagJSON);
+            /* recherche de la présence du produit*/
+            const productIndex = bag.findIndex(product => product.id === productId && product.color === color);
 
-                /* vérification de la présence du produit*/
-                var productExist = false;
+            if (productIndex !== -1){
 
-                for (var i = 0; i < bag.length; i++){
-
-                    /* Si le produit est présent on incrémente la quantité*/
-                    if ((bag[i].id == id) && (bag[i].color == color)){
-                        bag[i].quantity += quantity;
-                        productExist = true;
-                    }
+                /* vérification que l'on  ne dépasse pas la limite maximale d'exemplaire*/
+                if ((bag[productIndex].quantity + quantity) < 101){
+                    bag[productIndex].quantity += quantity;
+                    updateLocalStorage(bag[productIndex]);
                 }
-
-                /* si le produit n'éxiste pas on l'ajoute au panier*/
-                if (!productExist) {
-                    ajoutArticle(bag.length);
+                else{
+                    alert("Votre panier contient déjà " + bag[productIndex].quantity + " exemplaires, la limite de commande par produit est de 100 , vous ne pouvez donc pas commander plus de " + (100 - bag[productIndex].quantity) + " autres exemplaires de cette couleur.");
                 }
             }
             else{
-                ajoutArticle(0);
+                /* si le produit n'éxiste pas on l'ajoute au panier*/
+                ajoutArticle(bag.length);
             }
-
-            function ajoutArticle(numberArticle){
-                var article = {
-                    id: id,
-                    quantity: quantity,
-                    color: color
-                };
-                bag[numberArticle] = article;
-            }
-
-            /* mise a jour du panier dans le local Storage*/
-            localStorage.setItem("article", JSON.stringify(bag));
-
-            /* récupération de élément "h1" du DOM */
-            var nom = document.getElementById("title").innerHTML;
-
-            /* message de confirmation de l'ajout de l'article au panier */
-            var exemplaire = "exemplaire";
-            var ajout = "a bien été ajouté";
-            if (quantity>1) {
-                exemplaire += "s";
-                ajout = "ont bien été ajoutés";
-            }
-
-            alert(quantity + " " + exemplaire + " '" + color + "' " + " de l'article " + nom + ", " + ajout + " dans le panier");
         }
         else{
-            /* message sur les éléments manquants du formulaire*/
-            var messageCommande = "";
-            if (quantity == 0){
-                messageCommande = "Vous n'avez pas renseigné la quantité";
-                if (color == ""){
-                    messageCommande += " et la couleur";
-                }
-            }
-            else{
-                messageCommande = "Vous n'avez pas renseigné la couleur";
-            }
-            alert(messageCommande);
+            ajoutArticle(0);
         }
     })
+}
+
+/* function ajout d'article dans le panier*/
+function ajoutArticle(numberArticle){
+    let article = {
+        id: productId,
+        quantity: parseInt(labelItemQuantity.value),
+        color: selectColors.value
+    };
+    bag[numberArticle] = article;
+
+    updateLocalStorage(article);
+}
+
+/* function de mise a jour du panier dans le local Storage*/
+function updateLocalStorage(article){
+    
+    localStorage.setItem("article", JSON.stringify(bag));
+
+    /* message de confirmation de l'ajout de l'article au panier */
+    let exemplaire = "exemplaire";
+    let ajout = "a bien été ajouté";
+    if (quantity > 1) {
+        exemplaire += "s";
+        ajout = "ont bien été ajoutés";
+    }
+
+    alert("Vous avez " + article.quantity + " " + exemplaire + " en '" + article.color + "' " + " de l'article " + productName.innerHTML + " dans le panier");
 }
