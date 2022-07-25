@@ -178,6 +178,22 @@ function ajoutArticle(numberArticle){
     };
     bag[numberArticle] = article;
 
+    bag = bag.sort(function compare(article1,article2){
+        if (article1.id < article2.id){
+           return -1;
+        }
+        else if (article1.id > article2.id ){
+           return 1;
+        }
+        else if (article1.color < article2.color){            
+           return -1;
+        }
+        else if (article1.color > article2.color ){
+           return 1;
+        }        
+        return 0;
+    });
+
     updateLocalStorage(article);
 }
 
