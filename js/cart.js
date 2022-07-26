@@ -222,7 +222,7 @@ function removeQuantityProduct(elementInput){
         }
         else{
             /*recupération de l'objet article parent*/
-            let article = element.closest("article");
+            let article = elementInput.closest("article");
 
             const index = getProductInBagById(article);
             
