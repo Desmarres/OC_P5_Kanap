@@ -234,6 +234,9 @@ function removeQuantityProduct(elementInput){
                 /* mise a jour du panier dans le local Storage*/
                 localStorage.setItem("article", JSON.stringify(bag));
                 
+                /* mise à jour de la valeur par default de l'input */
+                event.target.defaultValue = elementInput.value;
+                
                 /*Modification affichage des totaux*/
                 displayTotal(bag);
             }
