@@ -1,22 +1,22 @@
 /* récupération de la section du DOM dynamique*/
-var sectionCartItems = document.getElementById("cart__items");
+const sectionCartItems = document.getElementById("cart__items");
 
 /* récupération des élément totaux du panier*/
-var spanTotalQuantity = document.getElementById("totalQuantity");
-var spanTotalPrice = document.getElementById("totalPrice");
+const spanTotalQuantity = document.getElementById("totalQuantity");
+const spanTotalPrice = document.getElementById("totalPrice");
 
 /* récuperation du panier */
-var bagJSON = localStorage.getItem("article");
+const bagJSON = localStorage.getItem("article");
 var bag = bagJSON && JSON.parse(bagJSON);
 
 /* récupération des éléments du formulaire*/
-var elementCartOrder = document.querySelector("div.cart__order > form.cart__order__form");
-var inputFirstName = document.getElementById("firstName");
-var inputLastName = document.getElementById("lastName");
-var inputAddress = document.getElementById("address");
-var inputCity = document.getElementById("city");
-var inputEmail = document.getElementById("email");
-var inputOrder = document.getElementById("order");
+const elementCartOrder = document.querySelector("div.cart__order > form.cart__order__form");
+const inputFirstName = document.getElementById("firstName");
+const inputLastName = document.getElementById("lastName");
+const inputAddress = document.getElementById("address");
+const inputCity = document.getElementById("city");
+const inputEmail = document.getElementById("email");
+const inputOrder = document.getElementById("order");
 
 /* ajout des placeholders */
 inputFirstName.setAttribute("placeholder","Pierre");
@@ -26,10 +26,10 @@ inputCity.setAttribute("placeholder","75019 Paris 19");
 inputEmail.setAttribute("placeholder","support@name.com");
 
 /* création des regex*/
-var regexName = new RegExp("^[A-Za-zÀ-ÖØ-öø-ÿ \-]+$");
-var regexAdress = new RegExp("^[A-Za-zÀ-ÖØ-öø-ÿ0-9 \-]+$");
-var regexCity = new RegExp("^[0-9]{5} [A-Za-zÀ-ÖØ-öø-ÿ0-9 \-]+$");
-var regexEmail = new RegExp("^[A-Za-z_0-9!#$%&'*+\/=?^_`{|}~.\-]+@(([A-z0-9\-]+\.[A-z]{2,3})|(([0-9]{1,3}[.]){3}[0-9]{1,3}))$");
+const regexName = new RegExp("^[A-Za-zÀ-ÖØ-öø-ÿ \-]+$");
+const regexAdress = new RegExp("^[A-Za-zÀ-ÖØ-öø-ÿ0-9 \-]+$");
+const regexCity = new RegExp("^[0-9]{5} [A-Za-zÀ-ÖØ-öø-ÿ0-9 \-]+$");
+const regexEmail = new RegExp("^[A-Za-z_0-9!#$%&'*+\/=?^_`{|}~.\-]+@(([A-z0-9\-]+\.[A-z]{2,3})|(([0-9]{1,3}[.]){3}[0-9]{1,3}))$");
 
 /*une fois le DOM chargé*/
 document.addEventListener('DOMContentLoaded', function(event) {
@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
 });
 
+/* fonction recupération des attributs par Id de produit*/
 function getProductInApiById(id) {
     return fetch("https://desmarres-p5-kanap.herokuapp.com/api/products/" + id)
     .then(function(res){
@@ -69,6 +70,7 @@ function getProductInApiById(id) {
     });
 }
 
+/* fonction envoie de la commande à l'API et récupération du numérto de commande*/
 function postOrder(order){
     return fetch("https://desmarres-p5-kanap.herokuapp.com/api/products/order",{
         method: "POST",
@@ -86,6 +88,14 @@ function postOrder(order){
     .catch(function(err){
         console.log("Une erreur est survenue lors de l'envoi de la commande : " + err);
     });
+}
+
+/* fonction récupération de l'index du produit dans le panier */
+function getProductInBagById(article){
+
+    const index = bag.findIndex(bagProduct => bagProduct.id === article.dataset.id && bagProduct.color === article.dataset.color);
+
+    return index
 }
 
 /* fonction affichage panier*/
@@ -199,14 +209,6 @@ async function displayTotal(bag){
     spanTotalPrice.innerHTML = total;
 }
 
-/* fonction récupération de l'index du produit dans le panier */
-function getProductInBagById(article){
-
-    const index = bag.findIndex(bagProduct => bagProduct.id === article.dataset.id && bagProduct.color === article.dataset.color);
-
-    return index
-}
-
 /* fonction modification de la quantité du produit dans le panier*/
 function removeQuantityProduct(elementInput){
 
@@ -282,6 +284,7 @@ function deleteProduct(deleteItem){
     })
 }
 
+/* function validation d'une saisie dans le formulaire*/
 function validateData(element,regex){
     element.addEventListener('input',function(saisie){
         let value = saisie.target.value;
@@ -310,76 +313,7 @@ function validateData(element,regex){
     })
 }
 
-/* function commander */
-async function buyBag(){
-    let listeIdProduct = [];
-
-    /*on parcourt l'ensemble du panier*/
-    for (let i in bag){
-        listeIdProduct [i] = bag[i].id;
-    }
-
-    let order = {
-        contact : {
-            firstName: inputFirstName.value,
-            lastName: inputLastName.value,
-            address: inputAddress.value,
-            city: inputCity.value,
-            email: inputEmail.value
-        },
-        products : listeIdProduct
-    }
-
-    let orderResponse = await postOrder(order);
-    let orderResponseValidate = orderControleOrder(order,orderResponse);
-
-    if (orderResponseValidate === true){
-        redirectionConfirmationOrder(orderResponse);
-    }
-    else{
-        alert("La commande n'a pas aboutie.");
-    }
-}
-
-/* function contrôle retour requête POST API*/
-function orderControleOrder(order,orderResponse){
-
-    /* on vérifie que les éléments de l'objet contact retourné sont les mêmes que celles envoyées et qu'il y a le même nombre de produits*/
-    if (JSON.stringify(order.contact) === JSON.stringify(orderResponse.contact) && order.products.length === orderResponse.products.length){
-
-        /* on vérifie que les id produits retournés sont les mêmes que ceux envoyés*/
-        for(let i in order.products){
-
-            if (order.products[i] !== orderResponse.products[i]._id)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-/* function redirection vers confirmation*/
-function redirectionConfirmationOrder(order){
-    localStorage.clear();
-    document.location.href = "confirmation.html?id=" + order.orderId;
-}
-
-/* function validation commande */
-function orderValidate(){
-    inputOrder.addEventListener("click",function(event){
-
-        /*stop la propagation de l'element*/
-        event.preventDefault();
-
-        buyBag();
-    })
-}
-
+/* fonction affichage du bouton 'order'*/
 function displayOrder(){
 
     let elementOrderQuestion = document.getElementsByClassName("cart__order__form__question");
@@ -409,6 +343,77 @@ function displayOrder(){
     }
 }
 
+/* function validation commande */
+function orderValidate(){
+    inputOrder.addEventListener("click",function(event){
+
+        /*stop la propagation de l'element*/
+        event.preventDefault();
+
+        buyBag();
+    })
+}
+
+/* function commander */
+async function buyBag(){
+    let listeIdProduct = [];
+
+    /*on parcourt l'ensemble du panier*/
+    for (let i in bag){
+        listeIdProduct [i] = bag[i].id;
+    }
+
+    let order = {
+        contact : {
+            firstName: inputFirstName.value,
+            lastName: inputLastName.value,
+            address: inputAddress.value,
+            city: inputCity.value,
+            email: inputEmail.value
+        },
+        products : listeIdProduct
+    }
+
+    let orderResponse = await postOrder(order);
+    let orderResponseValidate = orderControle(order,orderResponse);
+
+    if (orderResponseValidate === true){
+        redirectionConfirmationOrder(orderResponse);
+    }
+    else{
+        alert("La commande n'a pas aboutie.");
+    }
+}
+
+/* function contrôle retour requête POST API*/
+function orderControle(order,orderResponse){
+
+    /* on vérifie que les éléments de l'objet contact retourné sont les mêmes que celles envoyées et qu'il y a le même nombre de produits*/
+    if (JSON.stringify(order.contact) === JSON.stringify(orderResponse.contact) && order.products.length === orderResponse.products.length){
+
+        /* on vérifie que les id produits retournés sont les mêmes que ceux envoyés*/
+        for(let i in order.products){
+
+            if (order.products[i] !== orderResponse.products[i]._id)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/* function redirection vers confirmation*/
+function redirectionConfirmationOrder(order){
+    localStorage.clear();
+    document.location.href = "confirmation.html?id=" + order.orderId;
+}
+
+/* fonction affichage panier vide*/
 function emptyBag(){
     /* message panier vide*/
     sectionCartItems.innerHTML = "Votre panier est vide";

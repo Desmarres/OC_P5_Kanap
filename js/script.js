@@ -1,3 +1,4 @@
+/*une fois le DOM chargé*/
 document.addEventListener('DOMContentLoaded', function() {
 
     /* récupération des produits de l'API*/
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /* récupération de la section du DOM */
 const sectionItems = document.getElementById("items");
 
+/* affichage de l'ensemble des produits*/
 function displayListProduct(listProduct){
 
     /* parcours de l'ensemble des produits*/

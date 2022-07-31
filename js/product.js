@@ -31,6 +31,7 @@ function getProductId(){
     }
 }
 
+/*une fois le DOM chargé*/
 document.addEventListener('DOMContentLoaded', function() {
 
     /* récupération du produits de l'API*/
@@ -41,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })
     .then(function(product){
-        displayproduct(product);
+        displayProduct(product);
         removeQuantityProduct();
         removeColorProduct();
         displayAddToCart();
@@ -54,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /* fonction affichage produit*/
-function displayproduct(product) {
+function displayProduct(product) {
         
     /* récupération de élément "item__img" du DOM */
     const divItemsImg = document.getElementsByClassName("item__img")[0];
@@ -106,6 +107,7 @@ function removeQuantityProduct(){
 
 }
 
+/* fonction modification de la couleur*/
 function removeColorProduct(){
     
     /*ecoute de la modification de quantité du produit */
@@ -114,6 +116,7 @@ function removeColorProduct(){
     })
 }
 
+/* fonction affichage bouton ajout dans le panier*/
 function displayAddToCart(){
 
     /* recupération des élément du formulaire */
@@ -129,6 +132,7 @@ function displayAddToCart(){
     }
 }
 
+/*fonction ajout du produit dans le panier*/
 function addProductToBag(){
     /* écoute du click sur le bouton AddToCart*/
     buttonAddToCart.addEventListener('click',function(){
@@ -160,17 +164,17 @@ function addProductToBag(){
             }
             else{
                 /* si le produit n'éxiste pas on l'ajoute au panier*/
-                ajoutArticle(bag.length);
+                addArticle(bag.length);
             }
         }
         else{
-            ajoutArticle(0);
+            addArticle(0);
         }
     })
 }
 
-/* function ajout d'article dans le panier*/
-function ajoutArticle(numberArticle){
+/* function ajout d'article et trie du panier */
+function addArticle(numberArticle){
     let article = {
         id: productId,
         quantity: parseInt(labelItemQuantity.value),
