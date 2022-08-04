@@ -95,8 +95,6 @@ function removeQuantityProduct(){
     /*ecoute de la modification de quantité du produit */
     labelItemQuantity.addEventListener('change',function(event){
 
-        event.preventDefault();
-
         /*vérification que la quantité est bien correcte*/
         if (!( 0 < parseInt(labelItemQuantity.value) && 101 > parseInt(labelItemQuantity.value))){
             alert("Veuillez saisir un nombre entre 1 et 100");
